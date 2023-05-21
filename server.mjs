@@ -85,8 +85,7 @@ app.get('/monitor', (_, res) => {
     res.status(200).send(`${q.length()}`);
 });
 app.get('/greet', (_, res) => {
-    res.status(200).send(` ${argv[2]} / ${argv.length} / ${argv}`);
+    res.status(200).send(` Hallo aus dem Server ${argv[2]} `);
 });
 // Start the server
 app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
-

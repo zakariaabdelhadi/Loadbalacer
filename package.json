@@ -4,9 +4,9 @@
   "description": "",
   "main": "server_starter.mjs",
   "scripts": {
-    "dev": "nodemon index",
+    "dev": "nodemon load_balancer.mjs",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.mjs"
+    "start": "node server_starter.mjs"
   },
   "keywords": [],
   "author": "",

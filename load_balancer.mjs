@@ -16,16 +16,36 @@ let current_port = 3000;
 
 
 // Create list of server ports
-let servers = {};
+const servers = {};
 for (let i = 1; i <= SERVER_COUNT; i++) {
     servers[PORT + i] = SERVER_WEIGTH[i - 1]; // jedem Server ist ein Gewicht zugeordnet 
 }
+// 'let objekt1 = objekt2; eine flache Kopie der Referenz erstellt, während let objekt1 = Object.assign({}, objekt2);
+// eine flache Kopie der Eigenschaften in ein neues Objekt erstellt.
+let serversCopy = Object.assign({}, servers);
+//let serversCopy = { ...servers };
 
-let serversCopy = servers;
+
+
 
 // define the current server with the current number of connections
 let kopf = 0;
 let counter = 0;
+
+
+
+app.use('/', (req, res) => {
+
+    let nextWorkerPort = findBestServer();
+    console.log(`nextWorkerPort => ${nextWorkerPort}`);
+
+    serverConnections[nextWorkerPort]++;
+    proxy.web(req, res, { target: `http://${HOST}:${nextWorkerPort}` });
+
+    res.on('finish', () => {
+        serverConnections[nextWorkerPort]--;
+    });
+});
 
 // deleteServerFromQueue(kopf);
 
@@ -38,25 +58,22 @@ for (const server in servers) {
 
 const serverConnectionsCountDown = {};
 for (const server in servers) {
-    serverConnections[server] = 0;
+    serverConnectionsCountDown[server] = 0;
 }
 
 
 /////////////////////////////////////////////////// put your logic here /////////////////////////////////////////////
-// Function to return a random server port
+// Function to return the next server - round robin weighted
 function findBestServer() {
 
     if (Object.keys(serversCopy).length === 0) {
-
-        serversCopy = servers;
+        serversCopy = Object.assign({}, servers);
+        counter = 0;
     }
 
     if (counter <= 0) {
-
         [kopf, counter] = findTheMax();
         deleteServerFromQueue(kopf);
-
-
     }
     counter--;
     return kopf;
@@ -88,16 +105,5 @@ function deleteServerFromQueue(key) {
 }
 /////////////////////////////////////////////////// put your logic here /////////////////////////////////////////////
 
-app.use('/', (req, res) => {
-    let nextWorkerPort = findBestServer();
-    console.log(`nextWorkerPort => ${nextWorkerPort}`);
-
-    serverConnections[nextWorkerPort]++;
-    proxy.web(req, res, { target: `http://${HOST}:${nextWorkerPort}` });
-
-    res.on('finish', () => {
-        serverConnections[nextWorkerPort]--;
-    });
-});
 
 app.listen(PORT, () => console.log(`Proxy is listening on port ${PORT}`));
